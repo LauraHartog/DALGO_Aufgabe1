@@ -1,1 +1,4 @@
-ke	jwnf
+knm  ,mg.sd,mgke	jwnf
+djknfm
+
+fdk
