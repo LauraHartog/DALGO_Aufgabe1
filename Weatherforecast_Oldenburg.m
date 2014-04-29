@@ -26,229 +26,7 @@ clc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% Wetter-URL in xml-Format als 'weather_met.xml' downloaden und einlesen;
-% mit parse_xml wird die xml_datei in ein leichter zu verarbeitendes struct
-% umgewandelt
-
-path_met_xml = urlwrite('http://api.met.no/weatherapi/locationforecast/1.8/?lat=53.143889;lon=8.213889', 'weather_met.xml');
-xml = xmlread('weather_met.xml');
-data = parse_xml(xml);
-
-
-product = data.children{1}.children{2};
-
-% Variablen bzw. Konstanten deklarieren
-
-morning_str = '06:00:00';
-midday_str = '12:00:00';
-evening_str = '18:00:00';
-midnight_str = '00:00:00';
-
-midnight_prec = NaN;
-morning_prec = NaN;
-midday_prec = NaN;
-evening_prec = NaN;
-
-midnight_temp = NaN;
-morning_temp = NaN;
-midday_temp = NaN;
-evening_temp = NaN;
-
-midnight_winddir = NaN;
-morning_winddir = NaN;
-midday_winddir = NaN;
-evening_winddir = NaN;
-
-midnight_windspeed = NaN;
-morning_windspeed = NaN;
-midday_windspeed = NaN;
-evening_windspeed = NaN;
-
-midnight_humidity = NaN;
-morning_humidity = NaN;
-midday_humidity = NaN;
-evening_humidity = NaN;
-
-midnight_pressure = NaN;
-morning_pressure = NaN;
-midday_pressure = NaN;
-evening_pressure = NaN;
-
-midnight_cloudiness = NaN;
-morning_cloudiness = NaN;
-midday_cloudiness = NaN;
-evening_cloudiness = NaN;
-
-midnight_fog = NaN;
-morning_fog = NaN;
-midday_fog = NaN;
-evening_fog = NaN;
-
-midnight_lowclouds = NaN;
-morning_lowclouds = NaN;
-midday_lowclouds = NaN;
-evening_lowclouds = NaN;
-
-midnight_medclouds = NaN;
-morning_medclouds = NaN;
-midday_medclouds = NaN;
-evening_medclouds = NaN;
-
-midnight_highclouds = NaN;
-morning_highclouds = NaN;
-midday_highclouds = NaN;
-evening_highclouds = NaN;
-
-midnight_dptemp = NaN;
-morning_dptemp = NaN;
-midday_dptemp = NaN;
-evening_dptemp = NaN;
-
-
-idx_length = length(product.children);
-
-day_nr = 1;
-
-for idx = 1:idx_length
-
-    
-    time = product.children{idx}.attributes;
-    
-    clocktime_str_from = regexp(time.from,'[0-9]{2}\:[0-9]{2}\:[0-9]{2}','match');
-    clocktime_str_to = regexp(time.to,'[0-9]{2}\:[0-9]{2}\:[0-9]{2}','match');
-
-    date_str_from = regexp(time.from,'[0-9]{4}\-[0-9]{2}\-[0-9]{2}','match');
-    date_str_to = regexp(time.to,'[0-9]{4}\-[0-9]{2}\-[0-9]{2}','match');
-    
-    
-    if idx > 1
-    
-        prev_date_str_from = regexp(product.children{idx-1}.attributes.from,'[0-9]{4}\-[0-9]{2}\-[0-9]{2}','match');
-        
-    else
-        
-        prev_date_str_from = date_str_from;
-        
-    end
-    
-    % if-Bedingung, welche ab Anbruch eines neuen Tages ('00:00:00') alle
-    % vergangenen Variablen in die structnummer des vorherigen Datums schreibt,
-    % und einen neuen Tag im daystruct öffnet
-    % Problem: Der letzte Tag wird nicht mehr in das Day-struct
-    % geschrieben; Dies ist jedoch nicht weiter schlimm, da am Ende eh nur
-    % 7 Tage ausgewertet werden.
- 
-    
-    if strcmp(clocktime_str_from, midnight_str) && strcmp(clocktime_str_to,...
-            midnight_str) && (strcmp(date_str_from, prev_date_str_from) == 0)
-        
-        daystruct(day_nr) = struct('date', prev_date_str_from,...
-                            'precipitation', struct('midnight', midnight_prec, 'morning', morning_prec, 'midday', midday_prec, 'evening', evening_prec),...
-                            'temperature', struct('midnight', midnight_temp, 'morning', morning_temp, 'midday', midday_temp, 'evening', evening_temp),...
-                            'winddirection', struct('midnight', midnight_winddir, 'morning', morning_winddir, 'midday', midday_winddir, 'evening', evening_winddir),...
-                            'windspeed', struct('midnight', midnight_windspeed, 'morning', morning_windspeed, 'midday', midday_windspeed, 'evening', evening_windspeed),...
-                            'humidity', struct('midnight', midnight_humidity, 'morning', morning_humidity, 'midday', midday_humidity, 'evening', evening_humidity),...
-                            'pressure', struct('midnight', midnight_pressure, 'morning', morning_pressure, 'midday', midday_pressure, 'evening', evening_pressure),...
-                            'cloudiness', struct('midnight', midnight_cloudiness, 'morning', morning_cloudiness, 'midday', midday_cloudiness, 'evening', evening_cloudiness),...
-                            'fog', struct('midnight', midnight_fog, 'morning', morning_fog, 'midday', midday_fog, 'evening', evening_fog),...
-                            'lowclouds', struct('midnight', midnight_lowclouds, 'morning', morning_lowclouds, 'midday', midday_lowclouds, 'evening', evening_lowclouds),...
-                            'mediumclouds', struct('midnight', midnight_medclouds, 'morning', morning_medclouds, 'midday', midday_medclouds, 'evening', evening_medclouds),...
-                            'highclouds', struct('midnight', midnight_highclouds, 'morning', morning_highclouds, 'midday', midday_highclouds, 'evening', evening_highclouds),...
-                            'dewpointtemperature', struct('midnight', midnight_dptemp, 'morning', morning_dptemp, 'midday', midday_dptemp, 'evening', evening_dptemp));
-                            
-        
-        day_nr = day_nr + 1;
-    
-    end
-    
-    
-    % Verschiedene Wettereigenschaften-attribute detektieren für die
-    % Tageszeiten mitternachts, morgens, mittags und abends
-
-    if strcmp(clocktime_str_from, clocktime_str_to) == 1 && strcmp(clocktime_str_from, midnight_str)
-        
-        midnight_temp = product.children{idx}.children{1}.children{1}.attributes;
-        midnight_winddir = product.children{idx}.children{1}.children{2}.attributes;
-        midnight_windspeed = product.children{idx}.children{1}.children{3}.attributes;
-        midnight_humidity = product.children{idx}.children{1}.children{4}.attributes;
-        midnight_pressure = product.children{idx}.children{1}.children{5}.attributes;
-        midnight_cloudiness = product.children{idx}.children{1}.children{6}.attributes;
-        midnight_fog = product.children{idx}.children{1}.children{7}.attributes;
-        midnight_lowclouds = product.children{idx}.children{1}.children{8}.attributes;
-        midnight_medclouds = product.children{idx}.children{1}.children{9}.attributes;
-        midnight_highclouds = product.children{idx}.children{1}.children{10}.attributes;
-        midnight_dptemp = product.children{idx}.children{1}.children{11}.attributes;
-
-
-    elseif strcmp(clocktime_str_from, clocktime_str_to) == 1 && strcmp(clocktime_str_from, morning_str)
-        
-        morning_temp = product.children{idx}.children{1}.children{1}.attributes;
-        morning_winddir = product.children{idx}.children{1}.children{2}.attributes;
-        morning_windspeed = product.children{idx}.children{1}.children{3}.attributes;
-        morning_humidity = product.children{idx}.children{1}.children{4}.attributes;
-        morning_pressure = product.children{idx}.children{1}.children{5}.attributes;
-        morning_cloudiness = product.children{idx}.children{1}.children{6}.attributes;
-        morning_fog = product.children{idx}.children{1}.children{7}.attributes;
-        morning_lowclouds = product.children{idx}.children{1}.children{8}.attributes;
-        morning_medclouds = product.children{idx}.children{1}.children{9}.attributes;
-        morning_highclouds = product.children{idx}.children{1}.children{10}.attributes;
-        morning_dptemp = product.children{idx}.children{1}.children{11}.attributes;
-        
-        
-    elseif strcmp(clocktime_str_from, clocktime_str_to) == 1 && strcmp(clocktime_str_from, midday_str)
-        
-        midday_temp = product.children{idx}.children{1}.children{1}.attributes;
-        midday_winddir = product.children{idx}.children{1}.children{2}.attributes;
-        midday_windspeed = product.children{idx}.children{1}.children{3}.attributes;
-        midday_humidity = product.children{idx}.children{1}.children{4}.attributes;
-        midday_pressure = product.children{idx}.children{1}.children{5}.attributes;
-        midday_cloudiness = product.children{idx}.children{1}.children{6}.attributes;
-        midday_fog = product.children{idx}.children{1}.children{7}.attributes;
-        midday_lowclouds = product.children{idx}.children{1}.children{8}.attributes;
-        midday_medclouds = product.children{idx}.children{1}.children{9}.attributes;
-        midday_highclouds = product.children{idx}.children{1}.children{10}.attributes;
-        midday_dptemp = product.children{idx}.children{1}.children{11}.attributes;        
-
-        
-    elseif strcmp(clocktime_str_from, clocktime_str_to) == 1 && strcmp(clocktime_str_from, evening_str)
-        
-        evening_temp = product.children{idx}.children{1}.children{1}.attributes;
-        evening_winddir = product.children{idx}.children{1}.children{2}.attributes;
-        evening_windspeed = product.children{idx}.children{1}.children{3}.attributes;
-        evening_humidity = product.children{idx}.children{1}.children{4}.attributes;
-        evening_pressure = product.children{idx}.children{1}.children{5}.attributes;
-        evening_cloudiness = product.children{idx}.children{1}.children{6}.attributes;
-        evening_fog = product.children{idx}.children{1}.children{7}.attributes;
-        evening_lowclouds = product.children{idx}.children{1}.children{8}.attributes;
-        evening_medclouds = product.children{idx}.children{1}.children{9}.attributes;
-        evening_highclouds = product.children{idx}.children{1}.children{10}.attributes;
-        evening_dptemp = product.children{idx}.children{1}.children{11}.attributes;   
-  
-    end
-    
-    
-    % Niederschlag-attribute detektieren für die Tageszeiten
-    % mitternachts, morgens, mittags und abends stehen    
-    
-    if strcmp(clocktime_str_from, evening_str) == 1 && strcmp(clocktime_str_to, midnight_str) == 1
-        
-        midnight_prec = product.children{idx}.children{1}.children{1}.attributes;
-        
-    elseif strcmp(clocktime_str_from, midnight_str) == 1 && strcmp(clocktime_str_to, morning_str) == 1
-        
-        morning_prec = product.children{idx}.children{1}.children{1}.attributes;
-        
-    elseif strcmp(clocktime_str_from, morning_str) == 1 && strcmp(clocktime_str_to, midday_str) == 1
-        
-        midday_prec = product.children{idx}.children{1}.children{1}.attributes;
-
-    elseif strcmp(clocktime_str_from, midday_str) == 1 && strcmp(clocktime_str_to, evening_str) == 1
-        
-        evening_prec = product.children{idx}.children{1}.children{1}.attributes;
-    
-    end
-    
-end
+daystruct = WetterDatenVerarbeitung();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUIGUI %%
@@ -330,7 +108,7 @@ y_size_checkbox = 0.02;
 
 y_distance_checkbox = 0.01;
 
- 
+%{ 
 weathercomponents_text_control = uicontrol(hfig,'style', 'text',...
                                 'units','normalized',...
                                 'BackgroundColor',[1 0.8 0.4],...
@@ -421,14 +199,14 @@ dptemp_checkbox_control = uicontrol(hfig, 'style', 'checkbox',...
                                 x_size_checkbox y_size_checkbox],...
                                 'string', weather_components{13});
                             
-                            
+%}                            
 %---------------Einbinden Plot-Panel--------------------------------------
 
 plot_control = uipanel('Parent', hfig,...
              'units', 'normalized',...
              'ShadowColor',[1 1 0.7],...
              'BackgroundColor',[1 1 0.7],...
-             'position',   [0.02 0.25 0.75 0.5]);
+             'position',   [0.02 0.25 (1 - 2*0.02) 0.5]);
 
 day_panel_number = 3;
 
@@ -445,9 +223,6 @@ y_pos_evening_pan = 0;
 x_size_daytime_pan = 1;
 y_size_daytime_pan = 0.33;
 
-rain_pic = imread('rain','png');
-sunny_pic = imread('sunny','png');
-cloudy_pic = imread('cloudy','png');
 degree_symbol = sprintf('%c', char(176));
 
 
@@ -482,7 +257,7 @@ for pan_idx = 1:day_panel_number
 %                             'Box','Off',...
 %                             'Position',[0 0.4 0.5 0.5]);          
 %                             axes(midnight_picture_weather);
-%                             image(rain_pic);
+%                             image(daystruct(pan_idx).picture.midnight);
 %                             axis image  
 %                             axis off
 %                 
@@ -515,13 +290,28 @@ for pan_idx = 1:day_panel_number
                             'BackgroundColor',[1 1 0.7],...
                             'position', [x_pos_daytime_pan, y_pos_morning_pan,...
                             x_size_daytime_pan, y_size_daytime_pan]);
+    
+
+                        
+if isa(daystruct(pan_idx).temperature.morning,'double') == 1
+    
+     morning_NA_text_control = uicontrol('Parent', morning_panel_control,...
+                            'style','text',...
+                            'units', 'normalized',...
+                            'FontUnits','normalized',...
+                            'FontSize',0.3,...
+                            'position',   [0.05 0.2 0.9 0.6],...
+                            'BackgroundColor', [1 1 0.7],...
+                            'string', 'weatherdata n.a.');
+
+elseif isa(daystruct(pan_idx).temperature.morning,'double') == 0
                         
     morning_picture_weather = axes('Parent', morning_panel_control,...
                             'Units','normalized',...
                             'Box','Off',...
                             'Position',[0 0.4 0.5 0.5]);          
                             axes(morning_picture_weather);
-                            image(rain_pic);
+                            image(daystruct(pan_idx).picture.morning);
                             axis image  
                             axis off
                 
@@ -529,23 +319,27 @@ for pan_idx = 1:day_panel_number
                             'style','text',...
                             'units', 'normalized',...
                             'FontUnits','normalized',...
-                            'FontSize',0.8,...
-                            'position',   [0.5 0.5 0.5 0.5],...
+                            'FontSize',0.7,...
+                            'position',   [0.4 0.4 0.6 0.5],...
                             'BackgroundColor', [1 1 0.7],...
-                            'string',  horzcat('22',degree_symbol));
+                            'string',  horzcat(daystruct(pan_idx).temperature.morning.value,...
+                            degree_symbol, 'C'));
                            
-   morning_percipitation_text_control = uicontrol('Parent', morning_panel_control,...
+   morning_precipitation_text_control = uicontrol('Parent', morning_panel_control,...
                             'style','text',...
                             'FontUnits','normalized',...
                             'FontSize',0.8,...
                             'units', 'normalized',...
-                            'position',   [0 0.16 0.5 0.2],...
+                            'position',   [0 0.16 1 0.2],...
                             'BackgroundColor', [1 1 0.7],...
-                            'string',  horzcat('percipitation: 0.1 mm '));                         
+                            'string',  horzcat('precipitation: ',...
+                            daystruct(pan_idx).precipitation.morning.value, char(12),...
+                            daystruct(pan_idx).precipitation.morning.unit));
+end
 
 %------midday-panel-----------------------------------------
 
-   midday_panel_control = uipanel('Parent', day_panel_control,...
+midday_panel_control = uipanel('Parent', day_panel_control,...
                             'units', 'normalized',...
                             'Title','Midday:',...
                             'TitlePosition', 'lefttop',...
@@ -554,13 +348,29 @@ for pan_idx = 1:day_panel_number
                             'BackgroundColor',[1 1 0.7],...
                             'position', [x_pos_daytime_pan, y_pos_midday_pan,...
                             x_size_daytime_pan, y_size_daytime_pan]);
+
+if isa(daystruct(pan_idx).temperature.midday,'double') == 1
+    
+     midday_NA_text_control = uicontrol('Parent', midday_panel_control,...
+                            'style','text',...
+                            'units', 'normalized',...
+                            'FontUnits','normalized',...
+                            'FontSize',0.3,...
+                            'position',   [0.05 0.2 0.9 0.6],...
+                            'BackgroundColor', [1 1 0.7],...
+                            'string', 'weatherdata n.a.');
+
+
+elseif isa(daystruct(pan_idx).temperature.midday,'double') == 0
+
+
                         
     midday_picture_weather = axes('Parent', midday_panel_control,...
                             'Units','normalized',...
                             'Box','Off',...
                             'Position',[0 0.4 0.5 0.5]);          
                             axes(midday_picture_weather);
-                            image(sunny_pic);
+                            image(daystruct(pan_idx).picture.midday);
                             axis image  
                             axis off
                 
@@ -568,24 +378,27 @@ for pan_idx = 1:day_panel_number
                             'style','text',...
                             'units', 'normalized',...
                             'FontUnits','normalized',...
-                            'FontSize',0.8,...
-                            'position',   [0.5 0.5 0.5 0.5],...
+                            'FontSize',0.7,...
+                            'position',   [0.4 0.4 0.6 0.5],...
                             'BackgroundColor', [1 1 0.7],...
-                            'string',  horzcat('22',degree_symbol));
+                            'string',  horzcat(daystruct(pan_idx).temperature.midday.value,...
+                            degree_symbol, 'C'));
                            
-   midday_percipitation_text_control = uicontrol('Parent', midday_panel_control,...
+   midday_precipitation_text_control = uicontrol('Parent', midday_panel_control,...
                             'style','text',...
                             'FontUnits','normalized',...
                             'FontSize',0.8,...
                             'units', 'normalized',...
-                            'position',   [0 0.16 0.5 0.2],...
+                            'position',   [0 0.16 1 0.2],...
                             'BackgroundColor', [1 1 0.7],...
-                            'string',  horzcat('percipitation: 0.1 mm ')); 
+                            'string',  horzcat('precipitation: ',...
+                            daystruct(pan_idx).precipitation.midday.value, char(12),...
+                            daystruct(pan_idx).precipitation.midday.unit)); 
+end
 
 %---------evening-panel-----------------------------------------------------
 
-
-   evening_panel_control = uipanel('Parent', day_panel_control,...
+evening_panel_control = uipanel('Parent', day_panel_control,...
                             'units', 'normalized',...
                             'Title','Evening:',...
                             'TitlePosition', 'lefttop',...
@@ -594,13 +407,27 @@ for pan_idx = 1:day_panel_number
                             'BackgroundColor',[1 1 0.7],...
                             'position', [x_pos_daytime_pan, y_pos_evening_pan,...
                             x_size_daytime_pan, y_size_daytime_pan]);
+
+if isa(daystruct(pan_idx).temperature.evening,'double') == 1
+    
+     morning_NA_text_control = uicontrol('Parent', evening_panel_control,...
+                            'style','text',...
+                            'units', 'normalized',...
+                            'FontUnits','normalized',...
+                            'FontSize',0.3,...
+                            'position',   [0.05 0.2 0.9 0.6],...
+                            'BackgroundColor', [1 1 0.7],...
+                            'string', 'weatherdata n.a.');
+
+elseif isa(daystruct(pan_idx).temperature.evening,'double') == 0
+    
                         
     evening_picture_weather = axes('Parent', evening_panel_control,...
                             'Units','normalized',...
                             'Box','Off',...
                             'Position',[0 0.4 0.5 0.5]);          
                             axes(evening_picture_weather);
-                            image(cloudy_pic);
+                            image(daystruct(pan_idx).picture.evening);
                             axis image  
                             axis off
 
@@ -608,27 +435,27 @@ for pan_idx = 1:day_panel_number
                             'style','text',...
                             'units', 'normalized',...
                             'FontUnits','normalized',...
-                            'FontSize',0.8,...
-                            'position',   [0.5 0.5 0.5 0.5],...
+                            'FontSize',0.7,...
+                            'position',   [0.4 0.4 0.6 0.5],...
                             'BackgroundColor', [1 1 0.7],...
                             'string',  horzcat(daystruct(pan_idx).temperature.evening.value,...
                             degree_symbol, 'C'));
                            
-   evening_percipitation_text_control = uicontrol('Parent', evening_panel_control,...
+   evening_precipitation_text_control = uicontrol('Parent', evening_panel_control,...
                             'style','text',...
                             'FontUnits','normalized',...
                             'FontSize',0.8,...
                             'units', 'normalized',...
-                            'position',   [0 0.16 0.5 0.2],...
+                            'position',   [0 0.16 1 0.2],...
                             'BackgroundColor', [1 1 0.7],...
-                            'string',  horzcat('percipitation: 0.1 mm ')); 
+                            'string',  horzcat('precipitation: ',...
+                            daystruct(pan_idx).precipitation.evening.value,...
+                            char(12), daystruct(pan_idx).precipitation.evening.unit)); 
 
-
-                  %daystruct(pan_idx).temperature.evening.value)      
+end
 end
                                                 
-                         
-%for plot_idx = 1:panel_number
+                       
     
                         
                             
