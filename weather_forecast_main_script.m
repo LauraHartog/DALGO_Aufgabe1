@@ -1,10 +1,8 @@
-% Skript mit welchem eine xml-Datei von der Seite 
-% http://api.met.no/weatherapi/locationforecast/1.8/?lat=53.143889;lon=8.213889
-% heruntergeladen, verarbeitet und geplottet werden kann.
+% mainscript for the project "weatherforecast Oldenburg". This script opens
+% a GUI with which it is able to show the weatherforecast for the place
+% "Oldenburg" for maximum 7 days.
 %
-% Author: L. Hartog, F. Wichert (c) IHA @ Jade Hochschule applied licence see EOF 
-% Version History:
-% Ver. 0.01 initial create (empty) 18-Apr-2014 			 Initials (eg. JB)
+% Copyright 2014 Laura Hartog, Franz Wichert
 
 clear;
 close all;
@@ -22,7 +20,7 @@ set(hfig,'units','normalized',...
          'MenuBar','none');
 
 
-% -----------------Einbinden der Uberschrift ----------------------------
+%------------------------Including of headline----------------------------%
 
 title_text_control = uicontrol(hfig,'style','text',...
                                 'units', 'normalized',...
@@ -31,8 +29,8 @@ title_text_control = uicontrol(hfig,'style','text',...
                                 'FontUnits','normalized',...
                                 'FontSize',0.45,...
                                 'BackgroundColor', [1 1 0.7]);                     
-
-%--- Einbinden des Startdatums sowie Enddatums der Wettervorhersage-------
+                            
+%------Including of startdate- and enddate-popup of weatherforecast-------%
                             
 x_pos_date = 0.02;
 y_pos_date = 0.8;
@@ -48,7 +46,8 @@ startdate_text_control = uicontrol(hfig,'style', 'text',...
                                 'BackgroundColor',[1 0.8 0.4],...
                                 'FontUnits','normalized',...
                                 'Fontsize', date_text_size,...
-                                'position',[x_pos_date (y_pos_date + (y_size_date + y_distance_date)) x_size_date y_size_date],...
+                                'position',[x_pos_date (y_pos_date + (y_size_date + y_distance_date))...
+                                x_size_date y_size_date],...
                                 'string','startdate:');              
 
 
@@ -85,7 +84,7 @@ enddate_popup_control = uicontrol(hfig, 'style', 'popupmenu',...
                                 'callback',@Error_window_fcn);
 
 
-%-----------------Einbinden Update-Button--------------------
+%------------------------Including of update-button-----------------------%
 
 weatherupdate_control = uicontrol(hfig,'style', 'pushbutton',...
                                 'tag','weatherupdate_push',...
@@ -100,31 +99,6 @@ weatherupdate_control = uicontrol(hfig,'style', 'pushbutton',...
                             
                             
                             
-
+%------------------------Generating GUI handle-struct---------------------%
 data = guihandles(hfig);
 guidata(hfig, data);
-
-    
-                        
-                            
-                            
-%--------------------Licence ---------------------------------------------
-% Copyright (c) <2014> L. Hartog, F. Wichert
-% Institute for Hearing Technology and Audiology
-% Jade University of Applied Sciences 
-% Permission is hereby granted, free of charge, to any person obtaining 
-% a copy of this software and associated documentation files 
-% (the "Software"), to deal in the Software without restriction, including 
-% without limitation the rights to use, copy, modify, merge, publish, 
-% distribute, sublicense, and/or sell copies of the Software, and to
-% permit persons to whom the Software is furnished to do so, subject
-% to the following conditions:
-% The above copyright notice and this permission notice shall be included 
-% in all copies or substantial portions of the Software.
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-% EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
-% OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-% IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-% CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-% TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-% SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

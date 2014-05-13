@@ -1,37 +1,38 @@
 function [daystruct] = weather_data_reprocessing()
-%WEATHER_DATA_REPROCESSING Wetterdaten verarbeiten struct
-%   WEATHER_DATA_REPROCESSING() = WEATHER_DATA_REPROCESSING(in_param)
-% Input Parameter:
-%	 in_param: 		 Explain the parameter, default values, and units
-% Output Parameter:
-%	 out_param: 	 Explain the parameter, default values, and units
-%------------------------------------------------------------------------ 
-% Example: Provide example here if applicable (one or two lines) 
+%WEATHER_DATA_REPROCESSING weatherdata reprocessing into struct
+%   WEATHER_DATA_REPROCESSING() downloads current xml-weatherdata from
+%   Oldenburg by the website: http://api.met.no/weatherapi/locationforecast
+%   /1.8/?lat=53.143889;lon=8.213889 and converts this xml-data into a
+%   struct which contains several weatherproperties for ten dates at the
+%   times '00:00:00', '06:00:00', '12:00:00' and '18:00:00' (further
+%   referred to as 'four daytimes').
+%
+%   See also PARSE_XML.
 
-% Author: Laura Hartog, Franz Wichert (c) TGM @ Jade Hochschule applied licence see EOF 
-% Version History:
-% Ver. 0.01 initial create (empty) 28-Apr-2014  Initials (eg. JB)
+% Copyright 2014 Laura Hartog, Franz Wichert
 
-%------------Your function implementation here--------------------------- 
 
-% Wetter-URL in xml-Format als 'weather_met.xml' downloaden und einlesen;
-% mit parse_xml wird die xml_datei in ein leichter zu verarbeitendes struct
-% umgewandelt
 
+% download weather-url in xml-format as 'weather_met.xml'
 path_met_xml = urlwrite('http://api.met.no/weatherapi/locationforecast/1.8/?lat=53.143889;lon=8.213889', 'weather_met.xml');
 xml = xmlread('weather_met.xml');
+
+% parse_xml converts the xml-data into an easier readable struct
 data = parse_xml(xml);
 
 
+% variable product contains every usable weatherdata struct
 product = data.children{1}.children{2};
 
-% Variablen bzw. Konstanten deklarieren
+% variable declaration
 
+% strings which define the four daytimes
 morning_str = '06:00:00';
 midday_str = '12:00:00';
 evening_str = '18:00:00';
 midnight_str = '00:00:00';
 
+% every weather property by default is set to a NaN or a string
 midnight_prec = 'N/A';
 morning_prec = 'N/A';
 midday_prec = 'N/A';
@@ -107,23 +108,34 @@ morning_pic = NaN;
 midday_pic = NaN;
 evening_pic = NaN;
 
-
+% idx_length is the number of every periods or points of time which contain
+% usable weatherproperties
 idx_length = length(product.children);
 
 day_nr = 1;
 
+% for-loop indicates every point of time which is equal to one of the four
+% daytimes and writes the associated weather properties into a struct
+% called daystruct. The same procedure is done for the weather property
+% 'precipitation' which is associated to a period of time of 6 hours from
+% one of the four daytimes
 for idx = 1:idx_length
 
-    
+    % variable time contains timedatas like the current date and clocktime
     time = product.children{idx}.attributes;
     
+    % variable clocktime_str_from and clocktime_str_to contain the current
+    % time
     clocktime_str_from = regexp(time.from,'[0-9]{2}\:[0-9]{2}\:[0-9]{2}','match');
     clocktime_str_to = regexp(time.to,'[0-9]{2}\:[0-9]{2}\:[0-9]{2}','match');
-
+    
+    % variable date_str_from and date_str_to contain the current date
     date_str_from = regexp(time.from,'[0-9]{4}\-[0-9]{2}\-[0-9]{2}','match');
     date_str_to = regexp(time.to,'[0-9]{4}\-[0-9]{2}\-[0-9]{2}','match');
     
-    
+    % a variable called prev_date_str_from contains the date of the previous
+    % point of time; only the first prev_date_str_from equals the current
+    % point of time
     if idx > 1
     
         prev_date_str_from = regexp(product.children{idx-1}.attributes.from,'[0-9]{4}\-[0-9]{2}\-[0-9]{2}','match');
@@ -134,23 +146,20 @@ for idx = 1:idx_length
         
     end
     
-    % if-Bedingung, welche ab Anbruch eines neuen Tages ('00:00:00') alle
-    % vergangenen Variablen in die structnummer des vorherigen Datums schreibt,
-    % und einen neuen Tag im daystruct öffnet
-    % Problem: Der letzte Tag wird nicht mehr in das Day-struct
-    % geschrieben; Dies ist jedoch nicht weiter schlimm, da am Ende eh nur
-    % 7 Tage ausgewertet werden.
- 
     
+    % if statement which writes at the beginning of a new day (at
+    % '00:00:00' o'clock) every generated variables of weather property
+    % associated to the previous date into the structnumber of the previous
+    % date;
+    % problem: the very last day won't be written in the daystruct. This is
+    % not too bad as long as there will be analyzed not more than 7 days
     if strcmp(clocktime_str_from, midnight_str) && strcmp(clocktime_str_to,...
             midnight_str) && (strcmp(date_str_from, prev_date_str_from) == 0)
         
         
-        % Vier if Schleifen welche ein passendes Wetterbild zu den
-        % vier Tageszeiten durch analysieren der Wolkigkeit in Prozent und
-        % des Niederschlags in mm zuordnen
-
-
+        % Four if statements, which assign a matching weather picture to
+        % the four daytimes. This is done by analyzing the parameters
+        % 'cloudiness' in percent, and 'precipitation' in mm
         if isnan(midnight_cloud_percentage) == 0 && isnan(midnight_prec_value) == 0
             
             if (midnight_cloud_percentage <= 33) && (midnight_prec_value <= 0.2)
@@ -266,12 +275,9 @@ for idx = 1:idx_length
             
         end
         
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        
-            
-        
-        
+        % every for the previous date calculated weather property is saved
+        % into the current day number ('day_nr') of the struct called
+        % 'daystruct';
         daystruct(day_nr) = struct('date', prev_date_str_from,...
                             'picture', struct('midnight', midnight_pic, 'morning', morning_pic, 'midday', midday_pic, 'evening', evening_pic),...
                             'precipitation', struct('midnight', midnight_prec, 'morning', morning_prec, 'midday', midday_prec, 'evening', evening_prec),...
@@ -287,15 +293,15 @@ for idx = 1:idx_length
                             'highclouds', struct('midnight', midnight_highclouds, 'morning', morning_highclouds, 'midday', midday_highclouds, 'evening', evening_highclouds),...
                             'dewpointtemperature', struct('midnight', midnight_dptemp, 'morning', morning_dptemp, 'midday', midday_dptemp, 'evening', evening_dptemp));
                             
-        
+        % at the end of the if-statement what means the beginning of a new
+        % day, the variable day_nr is raised by one
         day_nr = day_nr + 1;
     
     end
     
-    
-    % Verschiedene Wettereigenschaften-attribute detektieren für die
-    % Tageszeiten mitternachts, morgens, mittags und abends
-
+    % every if-condition searches for one of the four daytimes and writes
+    % the associated weather properties into a variable associated to the
+    % current daytime
     if strcmp(clocktime_str_from, clocktime_str_to) == 1 && strcmp(clocktime_str_from, midnight_str)
         
         midnight_temp = product.children{idx}.children{1}.children{1}.attributes;
@@ -365,10 +371,10 @@ for idx = 1:idx_length
   
     end
     
-    
-    % Niederschlag-attribute detektieren für die Tageszeiten
-    % mitternachts, morgens, mittags und abends stehen    
-    
+    % this if-statement does the same procedure like the one above, with
+    % the only difference it looks for the precipitation which ranges from
+    % a period of 6 hours from every single daytime of the four
+    % daytimes
     if strcmp(clocktime_str_from, evening_str) == 1 && strcmp(clocktime_str_to, midnight_str) == 1
         
         midnight_prec = product.children{idx}.children{1}.children{1}.attributes;
@@ -396,25 +402,3 @@ for idx = 1:idx_length
     
     
 end
-
-
-
-%--------------------Licence ---------------------------------------------
-% Copyright (c) <2014> Laura Hartog, Franz Wichert
-% Jade University of Applied Sciences 
-% Permission is hereby granted, free of charge, to any person obtaining 
-% a copy of this software and associated documentation files 
-% (the "Software"), to deal in the Software without restriction, including 
-% without limitation the rights to use, copy, modify, merge, publish, 
-% distribute, sublicense, and/or sell copies of the Software, and to
-% permit persons to whom the Software is furnished to do so, subject
-% to the following conditions:
-% The above copyright notice and this permission notice shall be included 
-% in all copies or substantial portions of the Software.
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-% EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
-% OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-% IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-% CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-% TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-% SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
