@@ -1,7 +1,7 @@
 ## README##
 ####Autoren:  
-Wichert, Franz; Matr. 6003113; E-Mail: franz.wichert@student.jade-hs.de   
-Hartog, Laura; Matr. 6005625; E-Mail: laura.hartog@student.jade-hs.de
+Wichert, Franz; Matr. 6003113; E-Mail: franz.nachname@student.jade-hs.de   
+Hartog, Laura; Matr. 6005625; E-Mail: laura.nachname@student.jade-hs.de
 
 ###Motivation:
 Im Rahmen der Vorlesung *Daten und Algorithmen* des Studiengangs *Hörtechnik und Audiologie* wurde als Prüfungsleistung ein Programm geschrieben, das die Anforderung, einer graphischen Darstellung der aktuelle 5 Tage Wettervorhersage für die Stadt Oldenburg, die drei Komponeten umfasst, mindestens erfüllen soll. Die Umsetzung der Aufgabe erfolgt dabei in der Programmiersprache *Matlab*.
