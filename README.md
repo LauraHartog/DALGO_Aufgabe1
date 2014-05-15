@@ -26,6 +26,6 @@ In dem Skript  '**weather\_forecast\_main\_script**' werden die aktuellen Wetter
 ###Getestete Plattformen:
 
 * Windows 7 Home Premium; MATLAB R2013a Student Version (32-bit)  
-* 
+* Mac OS X Version 10.7.5; MATLAB R2012a Student Version (64-bit)
  
 
