@@ -9,7 +9,7 @@ function update_plot_fcn(handle, event, daystruct)
 %
 %   This function only works in combination with the script
 %   weather_forecast_main_script and is conducted after pressing the button 
-%   'show weatherforecast'
+%   'show weatherforecast'.
 
 % Copyright 2014 Laura Hartog, Franz Wichert
 

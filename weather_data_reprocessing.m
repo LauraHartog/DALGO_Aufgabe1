@@ -374,7 +374,7 @@ for idx = 1:idx_length
     % this if-statement does the same procedure like the one above, with
     % the only difference it looks for the precipitation which ranges from
     % a period of 6 hours from every single daytime of the four
-    % daytimes
+    % daytimes.
     if strcmp(clocktime_str_from, evening_str) == 1 && strcmp(clocktime_str_to, midnight_str) == 1
         
         midnight_prec = product.children{idx}.children{1}.children{1}.attributes;
