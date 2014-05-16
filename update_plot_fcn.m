@@ -9,7 +9,7 @@ function update_plot_fcn(handle, event, daystruct)
 %
 %   This function only works in combination with the script
 %   weather_forecast_main_script and is conducted after pressing the button 
-%   'update weatherdata'
+%   'show weatherforecast'
 
 % Copyright 2014 Laura Hartog, Franz Wichert
 
@@ -41,11 +41,19 @@ y_size_day_pan = 1 - 2*y_dis_day_pan;
 
 %determine the sizes of the panels for the infomrations of morning, midday 
 %end evening for each day panel
+
 x_pos_daytime_pan = 0;
+x_size_daytime_pan = 1;
+
+% if only one day is chosen, decrease x-size of daypanel
+if day_panel_number < 2;
+    x_pos_daytime_pan = 0.25;
+    x_size_daytime_pan = 0.5;
+end
+
 y_pos_morning_pan = 0.67;
 y_pos_midday_pan = 0.34;
 y_pos_evening_pan = 0;
-x_size_daytime_pan = 1;
 y_size_daytime_pan = 0.33;
 
 %variable degree_symbol contains the degree symbol 
@@ -54,7 +62,15 @@ degree_symbol = sprintf('%c', char(176));
 %determine the sizes and positions of the below used texts and pictures
 date_text_size = 0.15;
 
-temp_text_size = 0.7;
+temp_text_size = 0.6;
+
+%decrease temp_text_size if day_panel_number < 5
+if day_panel_number > 5;
+    
+    temp_text_size = 0.5;
+
+end
+
 temp_pos = [0.4 0.4 0.6 0.5];
 
 prec_text_size = 0.8;
@@ -66,7 +82,7 @@ NA_text_pos = [0.05 0.15 0.9 0.6];
 pic_pos = [0 0.4 0.5 0.5];
 
 %in order to prevent the multible execution of this function until it 
-%is done the button 'update weatherdata' is not enable
+%is done the button 'show weatherforecast' is not enable
 set(data.weatherupdate_push, 'enable', 'off');
 
 % for-loop that creates a panel for each day of the chosen day interval
@@ -117,13 +133,14 @@ for pan_idx = startday_nr : endday_nr
        % current weatherdata is available:
        
        % plot the picture with the predicited weather for the currentdaytime
+
        morning_picture_weather = axes('Parent', morning_panel_control,...
                                 'Units','normalized',...
                                 'Box','Off',...
                                 'Position', pic_pos);          
                                 axes(morning_picture_weather);
                                 image(daystruct(pan_idx).picture.morning);
-                                axis image  
+                                axis image
                                 axis off
                                 
        % print the predicited temperature for the current daytime
@@ -268,7 +285,7 @@ for pan_idx = startday_nr : endday_nr
 
     end
 end
-% button 'update weatherdate' is enable again
+% button 'show weatherforecast' is enable again
 set(data.weatherupdate_push, 'enable', 'on')
 
 end
